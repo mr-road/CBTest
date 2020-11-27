@@ -26,3 +26,5 @@ Thumbs.db
 !tests/lib/
 *.sbr
 obj/
+/ClearBank.DeveloperTest.Tests/bin
+/ClearBank.DeveloperTest/bin
