@@ -4,7 +4,7 @@ using Xunit;
 
 namespace ClearBank.DeveloperTest.Tests
 {
-    public class InitialTest
+    public class DefaultConstructorTest
     {
         [Fact]
         public void GivenEmptyPaymentRequest_WhenMakingPayment_ThenNoExceptionsThrownAndSuccessEqualsFalse()

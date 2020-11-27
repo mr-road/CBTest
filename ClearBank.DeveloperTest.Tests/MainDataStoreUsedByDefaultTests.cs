@@ -12,10 +12,11 @@ namespace ClearBank.DeveloperTest.Tests
         [Fact]
         public void GivenBasicPaymentRequest_WhenMakingPayment_ThenSuccessEqualsFalseAndDefaultToMainDataStore()
         {
+            var debtorAccountNumber = "D123";
             var mainAccountDataStore = new Mock<IAccountDataStore>();
             var backupAccountDataStore = new Mock<IAccountDataStore>();
+
             var paymentService = new PaymentService(mainAccountDataStore.Object, backupAccountDataStore.Object, new DataStoreTypeProvider());
-            var debtorAccountNumber = "D123";
 
             var result = paymentService.MakePayment(new MakePaymentRequest { DebtorAccountNumber = debtorAccountNumber });
 
@@ -29,10 +30,11 @@ namespace ClearBank.DeveloperTest.Tests
         {
             var expectedAccountBalance = 5;
             var debtorAccountNumber = "D123";
-            var mainAccountDataStore = new Mock<IAccountDataStore>();
             var validBacsAccount = new Account { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
+            var mainAccountDataStore = new Mock<IAccountDataStore>();
             mainAccountDataStore.Setup(main => main.GetAccount(debtorAccountNumber)).Returns(validBacsAccount);
             var backupAccountDataStore = new Mock<IAccountDataStore>();
+
             var paymentService = new PaymentService(
                 mainAccountDataStore.Object,
                 backupAccountDataStore.Object,
@@ -62,45 +64,23 @@ namespace ClearBank.DeveloperTest.Tests
         }
 
         [Fact]
-        public void GivenDefaultConstructor_WhenMakingPayment_ThenBehavesAsSeenInMockedTests()
-        {
-            var expectedAccountBalance = 567;
-            var debtorAccountNumber = "D123";
-            var validBacsAccount = new Account { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
-          
-            var paymentService = new PaymentService();
-
-            var validBacsPaymentRequest = new MakePaymentRequest
-            {
-                DebtorAccountNumber = debtorAccountNumber,
-                Amount = -567,
-                CreditorAccountNumber = "C123",
-                PaymentDate = DateTime.Now,
-                PaymentScheme = PaymentScheme.Bacs
-            };
-
-            var result = paymentService.MakePayment(validBacsPaymentRequest);
-
-            Assert.True(result.Success);
-            Assert.Equal(expectedAccountBalance, validBacsAccount.Balance);
-        }
-
-        [Fact]
         public void GivenValidBacsPaymentRequest_BackupSetInConfig_WhenMakingPayment_ThenSuccessEqualsTrueAndUsesBackupDataStore()
         {
             var expectedAccountBalance = -1;
             var debtorAccountNumber = "D123";
-            var mainAccountDataStore = new Mock<IAccountDataStore>();
             var validBacsAccount = new Account { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
+            var mainAccountDataStore = new Mock<IAccountDataStore>();
+
             var backupAccountDataStore = new Mock<IAccountDataStore>();
             backupAccountDataStore.Setup(main => main.GetAccount(debtorAccountNumber)).Returns(validBacsAccount);
+
             var dataStoreTypeProvider = new Mock<IDataStoreTypeProvider>();
             dataStoreTypeProvider.Setup(dstp => dstp.GetDataStoreType()).Returns("Backup");
+
             var paymentService = new PaymentService(
                 mainAccountDataStore.Object,
                 backupAccountDataStore.Object,
-                dataStoreTypeProvider.Object
-                );
+                dataStoreTypeProvider.Object);
 
             var validBacsPaymentRequest = new MakePaymentRequest
             {
@@ -122,6 +102,64 @@ namespace ClearBank.DeveloperTest.Tests
             backupAccountDataStore.Verify(main => main.UpdateAccount(validBacsAccount), Times.Once);
 
             Assert.Equal(expectedAccountBalance, validBacsAccount.Balance);
+        }
+
+        [Fact]
+        public void GivenValidChapsPaymentRequest_WhenMakingPayment_ThenExpectedBalanceIsSet()
+        {
+            var expectedAccountBalance = 5;
+            var debtorAccountNumber = "D123";
+            var validChapsAccount = new Account { AllowedPaymentSchemes = AllowedPaymentSchemes.Chaps };
+            var mainAccountDataStore = new Mock<IAccountDataStore>();
+            mainAccountDataStore.Setup(main => main.GetAccount(debtorAccountNumber)).Returns(validChapsAccount);
+
+            var paymentService = new PaymentService(
+                mainAccountDataStore.Object,
+                new BackupAccountDataStore(),
+                new DataStoreTypeProvider());
+
+            var validChapsPaymentRequest = new MakePaymentRequest
+            {
+                DebtorAccountNumber = debtorAccountNumber,
+                Amount = -5,
+                CreditorAccountNumber = "C123",
+                PaymentDate = DateTime.Now,
+                PaymentScheme = PaymentScheme.Chaps
+            };
+
+            var result = paymentService.MakePayment(validChapsPaymentRequest);
+
+            Assert.True(result.Success);
+            Assert.Equal(expectedAccountBalance, validChapsAccount.Balance);
+        }
+
+        [Fact]
+        public void GivenValidFasterPaymentRequest_WhenMakingPayment_ThenExpectedBalanceIsSet()
+        {
+            var expectedAccountBalance = 5;
+            var debtorAccountNumber = "D123";
+            var validFasterAccount = new Account { AllowedPaymentSchemes = AllowedPaymentSchemes.FasterPayments };
+            var mainAccountDataStore = new Mock<IAccountDataStore>();
+            mainAccountDataStore.Setup(main => main.GetAccount(debtorAccountNumber)).Returns(validFasterAccount);
+
+            var paymentService = new PaymentService(
+                mainAccountDataStore.Object,
+                new BackupAccountDataStore(),
+                new DataStoreTypeProvider());
+
+            var validFasterPaymentRequest = new MakePaymentRequest
+            {
+                DebtorAccountNumber = debtorAccountNumber,
+                Amount = -5,
+                CreditorAccountNumber = "C123",
+                PaymentDate = DateTime.Now,
+                PaymentScheme = PaymentScheme.FasterPayments
+            };
+
+            var result = paymentService.MakePayment(validFasterPaymentRequest);
+
+            Assert.True(result.Success);
+            Assert.Equal(expectedAccountBalance, validFasterAccount.Balance);
         }
     }
 }
