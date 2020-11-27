@@ -23,51 +23,7 @@ namespace ClearBank.DeveloperTest.Services
                 account = accountDataStore.GetAccount(request.DebtorAccountNumber);
             }
 
-            var result = new MakePaymentResult();
-
-            switch (request.PaymentScheme)
-            {
-                case PaymentScheme.Bacs:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Bacs))
-                    {
-                        result.Success = false;
-                    }
-                    break;
-
-                case PaymentScheme.FasterPayments:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.FasterPayments))
-                    {
-                        result.Success = false;
-                    }
-                    else if (account.Balance < request.Amount)
-                    {
-                        result.Success = false;
-                    }
-                    break;
-
-                case PaymentScheme.Chaps:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Chaps))
-                    {
-                        result.Success = false;
-                    }
-                    else if (account.Status != AccountStatus.Live)
-                    {
-                        result.Success = false;
-                    }
-                    break;
-            }
+            var result = ValidateAccountCanSatisfyPaymentRequest(request, account);
 
             if (result.Success)
             {
@@ -83,6 +39,72 @@ namespace ClearBank.DeveloperTest.Services
                     var accountDataStore = new AccountDataStore();
                     accountDataStore.UpdateAccount(account);
                 }
+            }
+
+            return result;
+        }
+
+        public static MakePaymentResult ValidateAccountCanSatisfyPaymentRequest(MakePaymentRequest request, Account account)
+        {
+            var result = new MakePaymentResult();
+
+            switch (request.PaymentScheme)
+            {
+                case PaymentScheme.Bacs:
+                    if (account == null)
+                    {
+                        result.Success = false;
+                    }
+                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Bacs))
+                    {
+                        result.Success = false;
+                    }
+                    else
+                    {
+                        result.Success = true;
+                    }
+
+                    break;
+
+                case PaymentScheme.FasterPayments:
+                    if (account == null)
+                    {
+                        result.Success = false;
+                    }
+                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.FasterPayments))
+                    {
+                        result.Success = false;
+                    }
+                    else if (account.Balance < request.Amount)
+                    {
+                        result.Success = false;
+                    }
+                    else
+                    {
+                        result.Success = true;
+                    }
+
+                    break;
+
+                case PaymentScheme.Chaps:
+                    if (account == null)
+                    {
+                        result.Success = false;
+                    }
+                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Chaps))
+                    {
+                        result.Success = false;
+                    }
+                    else if (account.Status != AccountStatus.Live)
+                    {
+                        result.Success = false;
+                    }
+                    else
+                    {
+                        result.Success = true;
+                    }
+
+                    break;
             }
 
             return result;
