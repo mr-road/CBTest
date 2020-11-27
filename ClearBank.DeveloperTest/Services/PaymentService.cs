@@ -7,23 +7,29 @@ namespace ClearBank.DeveloperTest.Services
     public class PaymentService : IPaymentService
     {
         private readonly IAccountDataStore _backupAccountDataStore;
+        private readonly IDataStoreTypeProvider _dataStoreTypeProvider;
         private readonly IAccountDataStore _accountDataStore;
 
         public PaymentService()
         {
             _backupAccountDataStore = new BackupAccountDataStore();
             _accountDataStore = new AccountDataStore();
+            _dataStoreTypeProvider = new DataStoreTypeProvider();
         }
 
-        public PaymentService(IAccountDataStore mainAccountDataStore, IAccountDataStore backupAccountDataStore)
+        public PaymentService(
+            IAccountDataStore mainAccountDataStore,
+            IAccountDataStore backupAccountDataStore,
+            IDataStoreTypeProvider dataStoreTypeProvider)
         {
             _backupAccountDataStore = backupAccountDataStore;
+            _dataStoreTypeProvider = dataStoreTypeProvider;
             _accountDataStore = mainAccountDataStore;
         }
 
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
-            var dataStoreType = ConfigurationManager.AppSettings["DataStoreType"];
+            var dataStoreType = _dataStoreTypeProvider.GetDataStoreType();
 
             Account account = null;
 
@@ -123,6 +129,19 @@ namespace ClearBank.DeveloperTest.Services
             }
 
             return result;
+        }
+    }
+
+    public interface IDataStoreTypeProvider
+    {
+        string GetDataStoreType();
+    }
+
+    public class DataStoreTypeProvider : IDataStoreTypeProvider
+    {
+        public string GetDataStoreType()
+        {
+            return ConfigurationManager.AppSettings["DataStoreType"];
         }
     }
 }
