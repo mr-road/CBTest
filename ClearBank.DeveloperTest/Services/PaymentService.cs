@@ -1,9 +1,89 @@
 ﻿using ClearBank.DeveloperTest.Data;
 using ClearBank.DeveloperTest.Types;
-using System.Configuration;
 
 namespace ClearBank.DeveloperTest.Services
 {
+    public class AccountValidator
+    {
+        public static MakePaymentResult ValidateAccountCanSatisfyPaymentRequest(MakePaymentRequest request, Account account)
+        {
+            var result = new MakePaymentResult();
+
+            switch (request.PaymentScheme)
+            {
+                case PaymentScheme.Bacs:
+                    ValidateBacs(account, result);
+                    break;
+
+                case PaymentScheme.FasterPayments:
+                    ValidateFasterPayments(request, account, result);
+                    break;
+
+                case PaymentScheme.Chaps:
+                    ValidateChaps(account, result);
+                    break;
+            }
+
+            return result;
+        }
+
+        private static void ValidateChaps(Account account, MakePaymentResult result)
+        {
+            if (account == null)
+            {
+                result.Success = false;
+            }
+            else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Chaps))
+            {
+                result.Success = false;
+            }
+            else if (account.Status != AccountStatus.Live)
+            {
+                result.Success = false;
+            }
+            else
+            {
+                result.Success = true;
+            }
+        }
+
+        private static void ValidateFasterPayments(MakePaymentRequest request, Account account, MakePaymentResult result)
+        {
+            if (account == null)
+            {
+                result.Success = false;
+            }
+            else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.FasterPayments))
+            {
+                result.Success = false;
+            }
+            else if (account.Balance < request.Amount)
+            {
+                result.Success = false;
+            }
+            else
+            {
+                result.Success = true;
+            }
+        }
+
+        private static void ValidateBacs(Account account, MakePaymentResult result)
+        {
+            if (account == null)
+            {
+                result.Success = false;
+            }
+            else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Bacs))
+            {
+                result.Success = false;
+            }
+            else
+            {
+                result.Success = true;
+            }
+        }
+    }
+
     public class PaymentService : IPaymentService
     {
         private readonly IAccountDataStore _backupAccountDataStore;
@@ -29,119 +109,36 @@ namespace ClearBank.DeveloperTest.Services
 
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
+            var accountDataStore = GetAccountDataStore();
+
+            var account = accountDataStore.GetAccount(request.DebtorAccountNumber);
+
+            var validationResult = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            if (validationResult.Success)
+            {
+                account.Balance -= request.Amount;
+                accountDataStore.UpdateAccount(account);
+            }
+
+            return validationResult;
+        }
+
+        private IAccountDataStore GetAccountDataStore()
+        {
             var dataStoreType = _dataStoreTypeProvider.GetDataStoreType();
 
-            Account account = null;
-
+            IAccountDataStore accountDataStore;
             if (dataStoreType == "Backup")
             {
-                var accountDataStore = _backupAccountDataStore;
-                account = accountDataStore.GetAccount(request.DebtorAccountNumber);
+                accountDataStore = _backupAccountDataStore;
             }
             else
             {
-                var accountDataStore = _accountDataStore;
-                account = accountDataStore.GetAccount(request.DebtorAccountNumber);
+                accountDataStore = _accountDataStore;
             }
 
-            var result = ValidateAccountCanSatisfyPaymentRequest(request, account);
-
-            if (result.Success)
-            {
-                account.Balance -= request.Amount;
-
-                if (dataStoreType == "Backup")
-                {
-                    var accountDataStore = _backupAccountDataStore;
-                    accountDataStore.UpdateAccount(account);
-                }
-                else
-                {
-                    var accountDataStore = _accountDataStore;
-                    accountDataStore.UpdateAccount(account);
-                }
-            }
-
-            return result;
-        }
-
-        public static MakePaymentResult ValidateAccountCanSatisfyPaymentRequest(MakePaymentRequest request, Account account)
-        {
-            var result = new MakePaymentResult();
-
-            switch (request.PaymentScheme)
-            {
-                case PaymentScheme.Bacs:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Bacs))
-                    {
-                        result.Success = false;
-                    }
-                    else
-                    {
-                        result.Success = true;
-                    }
-
-                    break;
-
-                case PaymentScheme.FasterPayments:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.FasterPayments))
-                    {
-                        result.Success = false;
-                    }
-                    else if (account.Balance < request.Amount)
-                    {
-                        result.Success = false;
-                    }
-                    else
-                    {
-                        result.Success = true;
-                    }
-
-                    break;
-
-                case PaymentScheme.Chaps:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Chaps))
-                    {
-                        result.Success = false;
-                    }
-                    else if (account.Status != AccountStatus.Live)
-                    {
-                        result.Success = false;
-                    }
-                    else
-                    {
-                        result.Success = true;
-                    }
-
-                    break;
-            }
-
-            return result;
-        }
-    }
-
-    public interface IDataStoreTypeProvider
-    {
-        string GetDataStoreType();
-    }
-
-    public class DataStoreTypeProvider : IDataStoreTypeProvider
-    {
-        public string GetDataStoreType()
-        {
-            return ConfigurationManager.AppSettings["DataStoreType"];
+            return accountDataStore;
         }
     }
 }

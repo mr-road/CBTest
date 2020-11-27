@@ -27,6 +27,7 @@ namespace ClearBank.DeveloperTest.Tests
         [Fact]
         public void GivenValidBACSPaymentRequest_WhenMakingPayment_ThenSuccessEqualsTrueAndDefaultToMainDataStore()
         {
+            var expectedAccountBalance = 5;
             var debtorAccountNumber = "D123";
             var mainAccountDataStore = new Mock<IAccountDataStore>();
             var validBacsAccount = new Account { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
@@ -41,7 +42,7 @@ namespace ClearBank.DeveloperTest.Tests
             var validBacsPaymentRequest = new MakePaymentRequest
             {
                 DebtorAccountNumber = debtorAccountNumber,
-                Amount = 1,
+                Amount = -5,
                 CreditorAccountNumber = "C123",
                 PaymentDate = DateTime.Now,
                 PaymentScheme = PaymentScheme.Bacs
@@ -56,11 +57,38 @@ namespace ClearBank.DeveloperTest.Tests
 
             backupAccountDataStore.Verify(backup => backup.GetAccount(debtorAccountNumber), Times.Never);
             backupAccountDataStore.Verify(main => main.UpdateAccount(validBacsAccount), Times.Never);
+
+            Assert.Equal(expectedAccountBalance, validBacsAccount.Balance);
         }
 
         [Fact]
-        public void GivenValidBACSPaymentRequest_BackupSetInConfig_WhenMakingPayment_ThenSuccessEqualsTrueAndUsesBackupDataStore()
+        public void GivenDefaultConstructor_WhenMakingPayment_ThenBehavesAsSeenInMockedTests()
         {
+            var expectedAccountBalance = 567;
+            var debtorAccountNumber = "D123";
+            var validBacsAccount = new Account { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
+          
+            var paymentService = new PaymentService();
+
+            var validBacsPaymentRequest = new MakePaymentRequest
+            {
+                DebtorAccountNumber = debtorAccountNumber,
+                Amount = -567,
+                CreditorAccountNumber = "C123",
+                PaymentDate = DateTime.Now,
+                PaymentScheme = PaymentScheme.Bacs
+            };
+
+            var result = paymentService.MakePayment(validBacsPaymentRequest);
+
+            Assert.True(result.Success);
+            Assert.Equal(expectedAccountBalance, validBacsAccount.Balance);
+        }
+
+        [Fact]
+        public void GivenValidBacsPaymentRequest_BackupSetInConfig_WhenMakingPayment_ThenSuccessEqualsTrueAndUsesBackupDataStore()
+        {
+            var expectedAccountBalance = -1;
             var debtorAccountNumber = "D123";
             var mainAccountDataStore = new Mock<IAccountDataStore>();
             var validBacsAccount = new Account { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
@@ -92,6 +120,8 @@ namespace ClearBank.DeveloperTest.Tests
 
             backupAccountDataStore.Verify(backup => backup.GetAccount(debtorAccountNumber), Times.Once);
             backupAccountDataStore.Verify(main => main.UpdateAccount(validBacsAccount), Times.Once);
+
+            Assert.Equal(expectedAccountBalance, validBacsAccount.Balance);
         }
     }
 }

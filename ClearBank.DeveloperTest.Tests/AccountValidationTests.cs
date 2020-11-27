@@ -4,40 +4,48 @@ using Xunit;
 
 namespace ClearBank.DeveloperTest.Tests
 {
-    public class BACSAccountValidationTests
+    public class BacsAccountValidationTests
     {
         [Fact]
-        public void GivenBACSRequest_AndNullAccount_WhenValidatingAccount_ThenResultSuccessIsFalse()
+        public void GivenBacsRequest_AndNullAccount_WhenValidatingAccount_ThenResultSuccessIsFalse()
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.Bacs };
             Account account = null;
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
 
         [Fact]
-        public void GivenBACSRequest_AndAccountWithChaps_WhenValidatingAccount_ThenResultSuccessIsFalse()
+        public void GivenBacsRequest_AndAccountWithChaps_WhenValidatingAccount_ThenResultSuccessIsFalse()
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.Bacs };
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.Chaps };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
         [Fact]
-        public void GivenBACSRequest_AndAccountWithFaster_WhenValidatingAccount_ThenResultSuccessIsFalse()
+        public void GivenBacsRequest_AndAccountWithFaster_WhenValidatingAccount_ThenResultSuccessIsFalse()
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.Bacs };
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.FasterPayments };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
 
         [Fact]
-        public void GivenBACSRequest_AndAccountWithBACSPermissions_WhenValidatingAccount_ThenResultSuccessIsTrue()
+        public void GivenBacsRequest_AndAccountWithBACSPermissions_WhenValidatingAccount_ThenResultSuccessIsTrue()
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.Bacs };
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.True(result.Success);
         }
     }
@@ -49,7 +57,9 @@ namespace ClearBank.DeveloperTest.Tests
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.FasterPayments };
             Account account = null;
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
 
@@ -58,7 +68,9 @@ namespace ClearBank.DeveloperTest.Tests
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.FasterPayments };
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.Chaps };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
         [Fact]
@@ -66,7 +78,9 @@ namespace ClearBank.DeveloperTest.Tests
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.FasterPayments };
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
 
@@ -75,7 +89,9 @@ namespace ClearBank.DeveloperTest.Tests
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.FasterPayments, Amount = 10};
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.FasterPayments, Balance = 9};
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
 
@@ -84,7 +100,9 @@ namespace ClearBank.DeveloperTest.Tests
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.FasterPayments };
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.FasterPayments };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.True(result.Success);
         }
     }
@@ -96,7 +114,9 @@ namespace ClearBank.DeveloperTest.Tests
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.Chaps };
             Account account = null;
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
 
@@ -105,7 +125,9 @@ namespace ClearBank.DeveloperTest.Tests
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.Chaps };
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.Bacs };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
         [Fact]
@@ -113,7 +135,9 @@ namespace ClearBank.DeveloperTest.Tests
         {
             MakePaymentRequest request = new MakePaymentRequest { PaymentScheme = PaymentScheme.Chaps };
             Account account = new Account() { AllowedPaymentSchemes = AllowedPaymentSchemes.FasterPayments };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
 
@@ -126,7 +150,9 @@ namespace ClearBank.DeveloperTest.Tests
                 AllowedPaymentSchemes = AllowedPaymentSchemes.Chaps,
                 Status = AccountStatus.Disabled
             };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.False(result.Success);
         }
 
@@ -138,7 +164,9 @@ namespace ClearBank.DeveloperTest.Tests
             {
                 AllowedPaymentSchemes = AllowedPaymentSchemes.Chaps,
             };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.True(result.Success);
         }
 
@@ -151,7 +179,9 @@ namespace ClearBank.DeveloperTest.Tests
                 AllowedPaymentSchemes = AllowedPaymentSchemes.Chaps,
                 Status = AccountStatus.Live
             };
-            var result = PaymentService.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
+            var result = AccountValidator.ValidateAccountCanSatisfyPaymentRequest(request, account);
+
             Assert.True(result.Success);
         }
     }
