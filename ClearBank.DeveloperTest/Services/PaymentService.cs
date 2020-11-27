@@ -6,6 +6,21 @@ namespace ClearBank.DeveloperTest.Services
 {
     public class PaymentService : IPaymentService
     {
+        private readonly IAccountDataStore _backupAccountDataStore;
+        private readonly IAccountDataStore _accountDataStore;
+
+        public PaymentService()
+        {
+            _backupAccountDataStore = new BackupAccountDataStore();
+            _accountDataStore = new AccountDataStore();
+        }
+
+        public PaymentService(IAccountDataStore mainAccountDataStore, IAccountDataStore backupAccountDataStore)
+        {
+            _backupAccountDataStore = backupAccountDataStore;
+            _accountDataStore = mainAccountDataStore;
+        }
+
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
             var dataStoreType = ConfigurationManager.AppSettings["DataStoreType"];
@@ -14,12 +29,12 @@ namespace ClearBank.DeveloperTest.Services
 
             if (dataStoreType == "Backup")
             {
-                var accountDataStore = new BackupAccountDataStore();
+                var accountDataStore = _backupAccountDataStore;
                 account = accountDataStore.GetAccount(request.DebtorAccountNumber);
             }
             else
             {
-                var accountDataStore = new AccountDataStore();
+                var accountDataStore = _accountDataStore;
                 account = accountDataStore.GetAccount(request.DebtorAccountNumber);
             }
 
@@ -31,12 +46,12 @@ namespace ClearBank.DeveloperTest.Services
 
                 if (dataStoreType == "Backup")
                 {
-                    var accountDataStore = new BackupAccountDataStore();
+                    var accountDataStore = _backupAccountDataStore;
                     accountDataStore.UpdateAccount(account);
                 }
                 else
                 {
-                    var accountDataStore = new AccountDataStore();
+                    var accountDataStore = _accountDataStore;
                     accountDataStore.UpdateAccount(account);
                 }
             }
