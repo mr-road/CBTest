@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClearBank.DeveloperTest", "ClearBank.DeveloperTest\ClearBank.DeveloperTest.csproj", "{5B180045-B13B-443E-82AF-E6F1D1247111}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClearBank.DeveloperTest.Tests", "ClearBank.DeveloperTest.Tests\ClearBank.DeveloperTest.Tests.csproj", "{A3CA1845-E8EC-4B29-8E5C-F1E69CF73F25}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B180045-B13B-443E-82AF-E6F1D1247111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B180045-B13B-443E-82AF-E6F1D1247111}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B180045-B13B-443E-82AF-E6F1D1247111}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B180045-B13B-443E-82AF-E6F1D1247111}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3CA1845-E8EC-4B29-8E5C-F1E69CF73F25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3CA1845-E8EC-4B29-8E5C-F1E69CF73F25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3CA1845-E8EC-4B29-8E5C-F1E69CF73F25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3CA1845-E8EC-4B29-8E5C-F1E69CF73F25}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BCDD9DD6-D423-48D4-BF2E-67533CADECAD}
+	EndGlobalSection
+EndGlobal
